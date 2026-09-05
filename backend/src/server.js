@@ -4,6 +4,10 @@ require('dotenv').config();
 
 const { testConnection } = require('./config/db');
 const contactRoutes = require('./routes/contactRoutes');
+const authRoutes = require('./routes/authRoutes');
+const salesRoutes = require('./routes/salesRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +28,10 @@ app.get('/api/health', async (req, res) => {
 
 // API Routes
 app.use('/api/contacts', contactRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/sales-orders', salesRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Global 404 Route Handler
 app.use((req, res) => {

@@ -29,9 +29,9 @@ RESTART IDENTITY CASCADE;
 -- Note: Passwords are stored as BCrypt hashes for 'password123'
 -- ====================================================================
 INSERT INTO users (id, name, email, password_hash, role) VALUES
-(1, 'Admin Business Owner', 'admin@urbanfurniture.com', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeg6Lruj3vjPGga31lW', 'admin'),
-(2, 'Rajesh Accountant', 'accountant@urbanfurniture.com', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeg6Lruj3vjPGga31lW', 'accountant'),
-(3, 'Nimesh Kumar', 'nimesh@gmail.com', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeg6Lruj3vjPGga31lW', 'contact');
+(1, 'Admin Business Owner', 'admin@urbanfurniture.com', '$2b$10$5LGbEjnVg.GFDnHRTTo.mOskJDOKWzJDuwJlTcgVrxEuQvDqDQjyC', 'admin'),
+(2, 'Rajesh Accountant', 'accountant@urbanfurniture.com', '$2b$10$5LGbEjnVg.GFDnHRTTo.mOskJDOKWzJDuwJlTcgVrxEuQvDqDQjyC', 'accountant'),
+(3, 'Nimesh Kumar', 'nimesh@gmail.com', '$2b$10$5LGbEjnVg.GFDnHRTTo.mOskJDOKWzJDuwJlTcgVrxEuQvDqDQjyC', 'contact');
 
 
 -- ====================================================================

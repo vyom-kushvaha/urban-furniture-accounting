@@ -73,6 +73,10 @@ web_modules/
 # Local AI rules file
 AI_RULES.md
 
+# Scratch & test scripts
+scratch/
+ROADMAP*.md
+
 
 
 # parcel-bundler cache (https://parceljs.org/)
