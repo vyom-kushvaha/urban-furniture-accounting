@@ -1,0 +1,324 @@
+/* ====================================================================
+   Urban Furniture Accounting System — Custom CSS & Design Tokens
+   Preserving Google Stitch Design Identity & Palette
+   ==================================================================== */
+
+:root {
+  /* Exact Project Colors */
+  --color-dark-blue: #112532;
+  --color-warm-gold: #F4B044;
+  --color-burnt-orange: #E0680E;
+  --color-slate-blue: #88A5B7;
+  
+  /* Surface & Background Variables */
+  --bg-surface: #f5faff;
+  --bg-container-lowest: #ffffff;
+  --bg-container-low: #e9f5ff;
+  --bg-container: #dcf1ff;
+  --bg-container-high: #d0ecff;
+  
+  /* Text & Border Colors */
+  --text-primary: #001e2c;
+  --text-muted: #43474b;
+  --text-on-dark: #ffffff;
+  --border-subtle: #c3c7cc;
+}
+
+body {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding-top: 56px; /* Offset for fixed top navbar */
+}
+
+/* ====================================================================
+   Top Header Navigation Bar
+   ==================================================================== */
+.navbar-custom {
+  background-color: var(--color-dark-blue);
+  box-shadow: 0 2px 12px rgba(17, 37, 50, 0.35);
+  height: 56px;
+}
+
+.navbar-custom .container-fluid,
+.navbar-custom .navbar-collapse,
+.navbar-custom .navbar-nav {
+  height: 100%;
+}
+
+.navbar-brand-title {
+  color: var(--text-on-dark);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.navbar-brand-subtitle {
+  color: var(--color-slate-blue);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+/* Navigation Links & Dropdowns */
+.nav-link-custom {
+  color: #b5c9da !important;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 0 12px !important;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.nav-link-custom:hover, .nav-link-custom.active {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mega-Menu Styling (Hover Expansion & Single Continuous Hit Zone) */
+.mega-menu-dropdown {
+  position: static !important;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.mega-menu-content {
+  position: absolute;
+  top: 56px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-bottom: 2px solid var(--color-warm-gold);
+  box-shadow: 0 12px 28px rgba(17, 37, 50, 0.25);
+  display: none;
+  z-index: 1050;
+  padding: 16px 24px;
+}
+
+/* Invisible hover bridge to eliminate gap between nav link and dropdown menu */
+.mega-menu-content::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: transparent;
+}
+
+.mega-menu-dropdown:hover .mega-menu-content,
+.mega-menu-dropdown.is-active .mega-menu-content {
+  display: block;
+}
+
+.mega-item-card {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: background-color 0.15s ease;
+}
+
+.mega-item-card:hover {
+  background-color: var(--bg-container-low);
+  color: var(--text-primary);
+}
+
+.mega-item-title {
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mega-item-title .material-symbols-outlined {
+  color: var(--color-burnt-orange);
+  font-size: 18px;
+}
+
+.mega-item-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ====================================================================
+   Control Strips & Action Headers
+   ==================================================================== */
+.control-strip {
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 10px 24px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* KPI Card Styling */
+.kpi-card {
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(17, 37, 50, 0.1);
+}
+
+.kpi-card-bar-gold {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background-color: var(--color-warm-gold);
+}
+
+.kpi-card-bar-blue {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background-color: var(--color-dark-blue);
+}
+
+.kpi-card-bar-orange {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background-color: var(--color-burnt-orange);
+}
+
+.kpi-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.kpi-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ====================================================================
+   Tables & Status Badges
+   ==================================================================== */
+.custom-table-card {
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  overflow: hidden;
+}
+
+.table-custom {
+  margin-bottom: 0;
+}
+
+.table-custom th {
+  background-color: var(--bg-container-low);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 10px 16px;
+}
+
+.table-custom td {
+  padding: 12px 16px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+/* Status Badges */
+.badge-status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-paid {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-unpaid {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.badge-confirmed {
+  background-color: #cff4fc;
+  color: #055160;
+}
+
+.badge-draft {
+  background-color: #e2e3e5;
+  color: #41464b;
+}
+
+/* Buttons */
+.btn-gold {
+  background-color: var(--color-warm-gold);
+  color: #112532;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-gold:hover {
+  background-color: #e09d33;
+  color: #112532;
+}
+
+.btn-dark-blue {
+  background-color: var(--color-dark-blue);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-dark-blue:hover {
+  background-color: #0c1c27;
+  color: #ffffff;
+}
+
+/* Kanban Cards */
+.kanban-card {
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  transition: all 0.15s ease;
+}
+
+.kanban-card:hover {
+  box-shadow: 0 4px 12px rgba(17, 37, 50, 0.12);
+}

@@ -126,4 +126,48 @@ const registerPayment = async (req, res) => {
   }
 };
 
-module.exports = { registerPayment };
+// @desc    Get all payment transactions
+// @route   GET /api/payments
+// @access  Private
+const getPayments = async (req, res) => {
+  try {
+    const isContact = req.user && req.user.role === 'contact' && req.user.contact_id;
+    let query = `
+      SELECT 
+        p.*,
+        c.name AS contact_name,
+        i.invoice_number,
+        b.bill_number
+      FROM payments p
+      JOIN contacts c ON p.contact_id = c.id
+      LEFT JOIN invoices i ON p.invoice_id = i.id
+      LEFT JOIN bills b ON p.bill_id = b.id
+    `;
+    const params = [];
+    if (isContact) {
+      query += ` WHERE p.contact_id = $1`;
+      params.push(req.user.contact_id);
+    }
+    query += ` ORDER BY p.id DESC`;
+
+    const result = await pool.query(query, params);
+
+    return res.status(200).json({
+      success: true,
+      count: result.rows.length,
+      data: result.rows.map(row => ({
+        ...row,
+        amount: parseFloat(row.amount || 0),
+      })),
+    });
+  } catch (error) {
+    console.error('[Error] getPayments:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching payments',
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { registerPayment, getPayments };

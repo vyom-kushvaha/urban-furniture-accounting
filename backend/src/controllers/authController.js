@@ -17,7 +17,10 @@ const loginUser = async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, name, email, password_hash, role FROM users WHERE email = $1',
+      `SELECT u.id, u.name, u.email, u.password_hash, u.role, c.id AS contact_id 
+       FROM users u 
+       LEFT JOIN contacts c ON c.user_id = u.id 
+       WHERE u.email = $1`,
       [email]
     );
 
@@ -39,13 +42,16 @@ const loginUser = async (req, res) => {
       });
     }
 
+    const tokenPayload = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      contact_id: user.contact_id || null,
+    };
+
     const token = jwt.sign(
-      {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      tokenPayload,
       process.env.JWT_SECRET || 'urban_furniture_secret_2026',
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
@@ -59,6 +65,7 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        contact_id: user.contact_id || null,
       },
     });
   } catch (error) {

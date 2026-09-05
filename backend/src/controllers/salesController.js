@@ -119,7 +119,8 @@ const createSalesOrder = async (req, res) => {
 // @access  Private
 const getSalesOrders = async (req, res) => {
   try {
-    const result = await pool.query(`
+    const isContact = req.user && req.user.role === 'contact' && req.user.contact_id;
+    let query = `
       SELECT 
         so.*,
         c.name AS contact_name,
@@ -128,13 +129,23 @@ const getSalesOrders = async (req, res) => {
       FROM sales_orders so
       JOIN contacts c ON so.contact_id = c.id
       LEFT JOIN invoices i ON i.sales_order_id = so.id
-      ORDER BY so.id DESC
-    `);
+    `;
+    const params = [];
+    if (isContact) {
+      query += ` WHERE so.contact_id = $1`;
+      params.push(req.user.contact_id);
+    }
+    query += ` ORDER BY so.id DESC`;
+
+    const result = await pool.query(query, params);
 
     return res.status(200).json({
       success: true,
       count: result.rows.length,
-      data: result.rows,
+      data: result.rows.map(row => ({
+        ...row,
+        total_amount: parseFloat(row.total_amount || 0),
+      })),
     });
   } catch (error) {
     console.error('[Error] getSalesOrders:', error.message);
@@ -146,7 +157,61 @@ const getSalesOrders = async (req, res) => {
   }
 };
 
+// @desc    Get all Customer Invoices
+// @route   GET /api/sales-orders/invoices or /api/invoices
+// @access  Private
+const getInvoices = async (req, res) => {
+  try {
+    const isContact = req.user && req.user.role === 'contact' && req.user.contact_id;
+    let query = `
+      SELECT 
+        i.id,
+        i.invoice_number,
+        c.name AS contact_name,
+        so.order_number,
+        i.invoice_date,
+        i.due_date,
+        i.subtotal,
+        i.tax_amount,
+        i.total_amount,
+        i.paid_amount,
+        i.status
+      FROM invoices i
+      JOIN contacts c ON i.contact_id = c.id
+      LEFT JOIN sales_orders so ON i.sales_order_id = so.id
+    `;
+    const params = [];
+    if (isContact) {
+      query += ` WHERE i.contact_id = $1`;
+      params.push(req.user.contact_id);
+    }
+    query += ` ORDER BY i.id DESC`;
+
+    const result = await pool.query(query, params);
+
+    return res.status(200).json({
+      success: true,
+      count: result.rows.length,
+      data: result.rows.map(row => ({
+        ...row,
+        subtotal: parseFloat(row.subtotal || 0),
+        tax_amount: parseFloat(row.tax_amount || 0),
+        total_amount: parseFloat(row.total_amount || 0),
+        paid_amount: parseFloat(row.paid_amount || 0),
+      })),
+    });
+  } catch (error) {
+    console.error('[Error] getInvoices:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching customer invoices',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createSalesOrder,
   getSalesOrders,
+  getInvoices,
 };

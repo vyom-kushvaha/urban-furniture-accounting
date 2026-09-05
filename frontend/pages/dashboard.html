@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Urban Furniture Accounting System</title>
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  
+  <!-- Custom Project CSS -->
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+  <!-- ====================================================================
+       TOP NAVIGATION BAR WITH MEGA-MENU
+       ==================================================================== -->
+  <nav class="navbar navbar-expand-lg fixed-top navbar-custom px-3">
+    <div class="container-fluid p-0">
+      
+      <!-- Brand Logo -->
+      <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.html">
+        <span class="material-symbols-outlined text-warning fs-3">chair</span>
+        <div class="d-flex flex-column">
+          <span class="navbar-brand-title">Urban Furniture</span>
+          <span class="navbar-brand-subtitle">Enterprise Ledger ERP</span>
+        </div>
+      </a>
+
+      <!-- Navbar Links & Mega Menus -->
+      <div class="collapse navbar-collapse ms-4">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+          
+          <!-- Mega Menu: SALES -->
+          <li class="nav-item mega-menu-dropdown">
+            <a class="nav-link nav-link-custom " href="#">
+              <span>Sales</span>
+              <span class="material-symbols-outlined fs-6">expand_more</span>
+            </a>
+            <div class="mega-menu-content">
+              <div class="row g-2">
+                <div class="col-4">
+                  <a href="sales-orders.html" class="mega-item-card">
+                    <div class="mega-item-title">
+                      <span class="material-symbols-outlined">shopping_cart</span>
+                      <span>Sales Order</span>
+                    </div>
+                    <div class="mega-item-desc">Confirm quotations & customer demand</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="customer-invoices.html" class="mega-item-card">
+                    <div class="mega-item-title">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                      <span>Customer Invoice</span>
+                    </div>
+                    <div class="mega-item-desc">Post receivables & GST breakdowns</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="payments.html" class="mega-item-card">
+                    <div class="mega-item-title">
+                      <span class="material-symbols-outlined">payments</span>
+                      <span>Sales Receipt / Payment</span>
+                    </div>
+                    <div class="mega-item-desc">Record customer inflow & settlements</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <!-- Mega Menu: PURCHASE -->
+          <li class="nav-item mega-menu-dropdown">
+            <a class="nav-link nav-link-custom " href="#">
+              <span>Purchase</span>
+              <span class="material-symbols-outlined fs-6">expand_more</span>
+            </a>
+            <div class="mega-menu-content">
+              <div class="row g-2">
+                <div class="col-4">
+                  <a href="purchase-orders.html" class="mega-item-card">
+                    <div class="mega-item-title">
+                      <span class="material-symbols-outlined">local_shipping</span>
+                      <span>Purchase Order</span>
+                    </div>
+                    <div class="mega-item-desc">Timber & hardware supply requisitions</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="vendor-bills.html" class="mega-item-card">
+                    <div class="mega-item-title">
+                      <span class="material-symbols-outlined">description</span>
+                      <span>Vendor Bill</span>
+                    </div>
+                    <div class="mega-item-desc">Accounts payable voucher entries</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="payments.html" class="mega-item-card">
+                    <div class="mega-item-title">
+                      <span class="material-symbols-outlined">account_balance_wallet</span>
+                      <span>Purchase Payment</span>
+                    </div>
+                    <div class="mega-item-desc">Vendor disbursements & wire matching</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <!-- Mega Menu: ACCOUNT -->
+          <li class="nav-item mega-menu-dropdown">
+            <a class="nav-link nav-link-custom " href="#">
+              <span>Account</span>
+              <span class="material-symbols-outlined fs-6">expand_more</span>
+            </a>
+            <div class="mega-menu-content">
+              <div class="row g-2">
+                <div class="col-4">
+                  <a href="contacts.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">badge</span><span>Contacts</span></div>
+                    <div class="mega-item-desc">Customers & Vendors master directory</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="products.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">chair</span><span>Products</span></div>
+                    <div class="mega-item-desc">Furniture goods & assembly services</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="chart-of-accounts.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">account_tree</span><span>Chart of Accounts</span></div>
+                    <div class="mega-item-desc">Asset, liability, equity ledgers</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="journals.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">menu_book</span><span>Journals</span></div>
+                    <div class="mega-item-desc">Sales, purchase & cash journals</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="journal-entries.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">edit_note</span><span>Journal Entries</span></div>
+                    <div class="mega-item-desc">Double-entry manual adjustments</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="budget.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">savings</span><span>Budget</span></div>
+                    <div class="mega-item-desc">Planned allocations vs actual burn</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <!-- Mega Menu: REPORT -->
+          <li class="nav-item mega-menu-dropdown">
+            <a class="nav-link nav-link-custom " href="#">
+              <span>Report</span>
+              <span class="material-symbols-outlined fs-6">expand_more</span>
+            </a>
+            <div class="mega-menu-content">
+              <div class="row g-2">
+                <div class="col-4">
+                  <a href="reports-balance-sheet.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">balance</span><span>Balance Sheet</span></div>
+                    <div class="mega-item-desc">Assets vs liabilities balance</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="reports-profit-loss.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">trending_up</span><span>Profit & Loss</span></div>
+                    <div class="mega-item-desc">Income statement & EBITDA</div>
+                  </a>
+                </div>
+                <div class="col-4">
+                  <a href="reports-budget.html" class="mega-item-card">
+                    <div class="mega-item-title"><span class="material-symbols-outlined">analytics</span><span>Budget Report</span></div>
+                    <div class="mega-item-desc">Departmental variance auditing</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+
+        </ul>
+      </div>
+
+      <!-- Right User Controls -->
+      <div class="d-flex align-items-center gap-3">
+        <div class="text-end text-white d-none d-sm-block">
+          <div class="fw-bold small" id="navUserName">Admin Business Owner</div>
+          <div class="text-muted" id="navUserEmail" style="font-size: 11px;">admin@urbanfurniture.com</div>
+        </div>
+        <a href="../index.html" class="btn btn-outline-light btn-sm d-flex align-items-center gap-1">
+          <span class="material-symbols-outlined fs-6">logout</span>
+        </a>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- ====================================================================
+       SUBHEADER CONTROL STRIP
+       ==================================================================== -->
+  <div class="control-strip d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <h1 class="page-title">Executive Ledger Overview</h1>
+      <span class="badge bg-light text-dark border">FY-2026 • Live</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="sales-orders.html" class="btn btn-gold btn-sm d-flex align-items-center gap-1">
+        <span class="material-symbols-outlined fs-6">add_circle</span>
+        <span>New Sales Order</span>
+      </a>
+      <a href="payments.html" class="btn btn-dark-blue btn-sm d-flex align-items-center gap-1">
+        <span class="material-symbols-outlined fs-6">payments</span>
+        <span>Register Payment</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MAIN DASHBOARD CONTENT
+       ==================================================================== -->
+  <div class="container-fluid p-4">
+    
+    <!-- 4 KPI CARDS AREA -->
+    <div class="row g-3 mb-4">
+      
+      <!-- KPI 1: Total Sales -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+          <div class="kpi-card-bar-gold"></div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="kpi-title">Total Sales Invoiced</span>
+            <span class="material-symbols-outlined text-warning fs-5">point_of_sale</span>
+          </div>
+          <div class="kpi-value" id="kpiTotalSales">₹ --</div>
+          <div class="small text-muted mt-2">18% GST Included</div>
+        </div>
+      </div>
+
+      <!-- KPI 2: Payments Collected -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+          <div class="kpi-card-bar-blue"></div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="kpi-title">Payments Collected</span>
+            <span class="material-symbols-outlined text-primary fs-5">account_balance</span>
+          </div>
+          <div class="kpi-value" id="kpiPaymentsCollected">₹ --</div>
+          <div class="small text-muted mt-2">Cleared Bank & Cash</div>
+        </div>
+      </div>
+
+      <!-- KPI 3: Receivables Due -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+          <div class="kpi-card-bar-orange"></div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="kpi-title">Receivables Due</span>
+            <span class="material-symbols-outlined text-danger fs-5">pending_actions</span>
+          </div>
+          <div class="kpi-value" id="kpiReceivablesDue">₹ --</div>
+          <div class="small text-danger font-semibold mt-2">Pending Customer Invoices</div>
+        </div>
+      </div>
+
+      <!-- KPI 4: Operating Profit -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+          <div class="kpi-card-bar-gold"></div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="kpi-title">Operating Net Profit</span>
+            <span class="material-symbols-outlined text-success fs-5">monitoring</span>
+          </div>
+          <div class="kpi-value" id="kpiNetProfit">₹ --</div>
+          <div class="small text-muted mt-2">Income - Expense Margin</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RECENT TRANSACTIONS TABLE CARD -->
+    <div class="custom-table-card">
+      <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold m-0 text-dark">Recent Sales & Invoice Transactions</h6>
+        <a href="sales-orders.html" class="btn btn-outline-secondary btn-sm">View All Orders</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-custom align-middle">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer Name</th>
+              <th>Order Date</th>
+              <th>Status</th>
+              <th class="text-end">Total Amount</th>
+            </tr>
+          </thead>
+          <tbody id="recentTransactionsTableBody">
+            <tr>
+              <td colspan="5" class="text-center text-muted py-3">Loading recent transactions...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom Project JS -->
+  <script src="../js/app.js"></script>
+  <script src="../js/dashboard.js"></script>
+
+</body>
+</html>
