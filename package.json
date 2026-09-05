@@ -2,16 +2,23 @@
   "name": "urban-furniture-accounting",
   "version": "1.0.0",
   "description": "Integrated Accounting System for Urban Furniture",
-  "main": "backend/server.js",
+  "main": "backend/src/server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
+    "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  },
   "devDependencies": {
     "@reticlehq/react": "^2.13.1",
-    "@reticlehq/server": "^2.13.1"
+    "@reticlehq/server": "^2.13.1",
+    "nodemon": "^3.1.14"
   }
 }

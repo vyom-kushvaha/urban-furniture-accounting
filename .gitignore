@@ -68,9 +68,11 @@ web_modules/
 # dotenv environment variable files
 .env
 .env.*
+!.env.example
 
 # Local AI rules file
 AI_RULES.md
+
 
 
 # parcel-bundler cache (https://parceljs.org/)

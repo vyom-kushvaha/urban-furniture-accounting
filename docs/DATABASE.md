@@ -1,393 +1,305 @@
-# Database Design — Urban Furniture
+# Database Schema & Modular ER Diagrams — Urban Furniture
 
-## 1. Database
-
-**Database:** PostgreSQL
-
-The database is designed to store master data, business transactions, payments, and accounting records while maintaining relationships between them.
+To ensure 100% readability and clarity, the database ER diagram is broken down into 5 focused core module diagrams below.
 
 ---
 
-## 2. Users
+## 1. Master Data ERD (Core Entities)
 
-Stores login and role information.
+Stores users, customer/vendor contacts, product catalog, chart of accounts, and accounting journals.
 
-| Field         | Type         | Key    |
-| ------------- | ------------ | ------ |
-| id            | SERIAL       | PK     |
-| name          | VARCHAR(100) |        |
-| email         | VARCHAR(150) | UNIQUE |
-| password_hash | TEXT         |        |
-| role          | VARCHAR(30)  |        |
-| created_at    | TIMESTAMP    |        |
+```mermaid
+erDiagram
+    USERS {
+        int id PK
+        string name
+        string email UK
+        string password_hash
+        string role
+        timestamp created_at
+    }
 
-**Roles:**
+    CONTACTS {
+        int id PK
+        string name
+        string type
+        string email
+        string mobile
+        int user_id FK,UK
+        boolean is_active
+    }
 
-* Admin / Business Owner
-* Accountant
-* Contact User
+    PRODUCTS {
+        int id PK
+        string name
+        string type
+        decimal sales_price
+        decimal purchase_price
+        string category
+    }
 
----
+    ACCOUNTS {
+        int id PK
+        string account_code UK
+        string account_name
+        string type
+    }
 
-## 3. Contacts
+    JOURNALS {
+        int id PK
+        string code UK
+        string name
+        string type
+        int default_account_id FK
+    }
 
-Stores customers and vendors.
-
-| Field         | Type         | Key |
-| ------------- | ------------ | --- |
-| id            | SERIAL       | PK  |
-| name          | VARCHAR(150) |     |
-| type          | VARCHAR(20)  |     |
-| email         | VARCHAR(150) |     |
-| mobile        | VARCHAR(20)  |     |
-| address       | TEXT         |     |
-| city          | VARCHAR(100) |     |
-| state         | VARCHAR(100) |     |
-| pincode       | VARCHAR(10)  |     |
-| profile_image | TEXT         |     |
-| user_id       | INT          | FK  |
-| created_at    | TIMESTAMP    |     |
-
-`user_id → users.id`
-
-A Contact User can be linked to a contact.
-
----
-
-## 4. Products
-
-Stores goods and services sold or purchased by the business.
-
-| Field          | Type          | Key |
-| -------------- | ------------- | --- |
-| id             | SERIAL        | PK  |
-| name           | VARCHAR(150)  |     |
-| type           | VARCHAR(20)   |     |
-| sales_price    | DECIMAL(12,2) |     |
-| purchase_price | DECIMAL(12,2) |     |
-| category       | VARCHAR(100)  |     |
-| created_at     | TIMESTAMP     |     |
-
----
-
-## 5. Accounts
-
-Stores the Chart of Accounts.
-
-| Field        | Type         | Key |
-| ------------ | ------------ | --- |
-| id           | SERIAL       | PK  |
-| account_name | VARCHAR(150) |     |
-| type         | VARCHAR(30)  |     |
-| created_at   | TIMESTAMP    |     |
-
-**Account Types:**
-
-```text
-Asset
-Liability
-Expense
-Income
-Capital
+    USERS ||--o| CONTACTS : "user_id"
+    ACCOUNTS ||--o{ JOURNALS : "default_account_id"
 ```
 
 ---
 
-## 6. Journals
+## 2. Sales & Invoicing Workflow ERD
 
-Stores different types of accounting journals.
+Manages customer sales orders, line items, customer invoices, and invoice line items.
 
-| Field              | Type         | Key |
-| ------------------ | ------------ | --- |
-| id                 | SERIAL       | PK  |
-| name               | VARCHAR(100) |     |
-| type               | VARCHAR(30)  |     |
-| default_account_id | INT          | FK  |
+```mermaid
+erDiagram
+    CONTACTS {
+        int id PK
+        string name
+        string type
+    }
 
-`default_account_id → accounts.id`
+    PRODUCTS {
+        int id PK
+        string name
+        decimal sales_price
+    }
 
-Examples:
+    SALES_ORDERS {
+        int id PK
+        string order_number UK
+        int contact_id FK
+        date order_date
+        string status
+        decimal total_amount
+    }
 
-```text
-Sales Journal
-Purchase Journal
-Bank Journal
-Cash Journal
+    SALES_ORDER_ITEMS {
+        int id PK
+        int sales_order_id FK
+        int product_id FK
+        int quantity
+        decimal unit_price
+        decimal tax_amount
+        decimal subtotal
+    }
+
+    INVOICES {
+        int id PK
+        string invoice_number UK
+        int contact_id FK
+        int sales_order_id FK
+        date invoice_date
+        date due_date
+        decimal total_amount
+        decimal paid_amount
+        string status
+    }
+
+    INVOICE_ITEMS {
+        int id PK
+        int invoice_id FK
+        int product_id FK
+        int quantity
+        decimal unit_price
+        decimal tax_amount
+        decimal subtotal
+    }
+
+    CONTACTS ||--o{ SALES_ORDERS : "contact_id"
+    SALES_ORDERS ||--|{ SALES_ORDER_ITEMS : "sales_order_id"
+    PRODUCTS ||--o{ SALES_ORDER_ITEMS : "product_id"
+
+    CONTACTS ||--o{ INVOICES : "contact_id"
+    SALES_ORDERS ||--o| INVOICES : "sales_order_id"
+    INVOICES ||--|{ INVOICE_ITEMS : "invoice_id"
+    PRODUCTS ||--o{ INVOICE_ITEMS : "product_id"
 ```
 
 ---
 
-## 7. Sales Orders
+## 3. Purchase & Vendor Bills Workflow ERD
 
-Stores customer orders.
+Manages vendor purchase orders, vendor bills, and line item breakdowns.
 
-| Field        | Type          | Key |
-| ------------ | ------------- | --- |
-| id           | SERIAL        | PK  |
-| contact_id   | INT           | FK  |
-| order_date   | DATE          |     |
-| status       | VARCHAR(30)   |     |
-| total_amount | DECIMAL(12,2) |     |
+```mermaid
+erDiagram
+    CONTACTS {
+        int id PK
+        string name
+        string type
+    }
 
-`contact_id → contacts.id`
+    PRODUCTS {
+        int id PK
+        string name
+        decimal purchase_price
+    }
 
-One customer can have many sales orders.
+    PURCHASE_ORDERS {
+        int id PK
+        string po_number UK
+        int vendor_id FK
+        date order_date
+        string status
+        decimal total_amount
+    }
 
----
+    PURCHASE_ORDER_ITEMS {
+        int id PK
+        int purchase_order_id FK
+        int product_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+    }
 
-## 8. Sales Order Items
+    BILLS {
+        int id PK
+        string bill_number UK
+        int vendor_id FK
+        int purchase_order_id FK
+        date bill_date
+        date due_date
+        decimal total_amount
+        decimal paid_amount
+        string status
+    }
 
-Stores products inside a Sales Order.
+    BILL_ITEMS {
+        int id PK
+        int bill_id FK
+        int product_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+    }
 
-| Field          | Type          | Key |
-| -------------- | ------------- | --- |
-| id             | SERIAL        | PK  |
-| sales_order_id | INT           | FK  |
-| product_id     | INT           | FK  |
-| quantity       | INT           |     |
-| unit_price     | DECIMAL(12,2) |     |
-| tax            | DECIMAL(12,2) |     |
-| subtotal       | DECIMAL(12,2) |     |
+    CONTACTS ||--o{ PURCHASE_ORDERS : "vendor_id"
+    PURCHASE_ORDERS ||--|{ PURCHASE_ORDER_ITEMS : "purchase_order_id"
+    PRODUCTS ||--o{ PURCHASE_ORDER_ITEMS : "product_id"
 
-Relationships:
-
-```text
-sales_order_id → sales_orders.id
-product_id → products.id
-```
-
-One Sales Order can contain multiple products.
-
----
-
-## 9. Purchase Orders
-
-Stores orders placed with vendors.
-
-| Field        | Type          | Key |
-| ------------ | ------------- | --- |
-| id           | SERIAL        | PK  |
-| vendor_id    | INT           | FK  |
-| order_date   | DATE          |     |
-| status       | VARCHAR(30)   |     |
-| total_amount | DECIMAL(12,2) |     |
-
-`vendor_id → contacts.id`
-
----
-
-## 10. Purchase Order Items
-
-Stores products inside a Purchase Order.
-
-| Field             | Type          | Key |
-| ----------------- | ------------- | --- |
-| id                | SERIAL        | PK  |
-| purchase_order_id | INT           | FK  |
-| product_id        | INT           | FK  |
-| quantity          | INT           |     |
-| unit_price        | DECIMAL(12,2) |     |
-| subtotal          | DECIMAL(12,2) |     |
-
-Relationships:
-
-```text
-purchase_order_id → purchase_orders.id
-product_id → products.id
+    CONTACTS ||--o{ BILLS : "vendor_id"
+    PURCHASE_ORDERS ||--o| BILLS : "purchase_order_id"
+    BILLS ||--|{ BILL_ITEMS : "bill_id"
+    PRODUCTS ||--o{ BILL_ITEMS : "product_id"
 ```
 
 ---
 
-## 11. Invoices
+## 4. Payments & Double-Entry Accounting ERD
 
-Stores customer invoices and vendor bills.
+Manages payments against customer invoices or vendor bills, and links to automated journal entries and ledger lines.
 
-| Field             | Type          | Key |
-| ----------------- | ------------- | --- |
-| id                | SERIAL        | PK  |
-| contact_id        | INT           | FK  |
-| sales_order_id    | INT           | FK  |
-| purchase_order_id | INT           | FK  |
-| type              | VARCHAR(20)   |     |
-| invoice_date      | DATE          |     |
-| due_date          | DATE          |     |
-| subtotal          | DECIMAL(12,2) |     |
-| tax               | DECIMAL(12,2) |     |
-| total             | DECIMAL(12,2) |     |
-| status            | VARCHAR(30)   |     |
+```mermaid
+erDiagram
+    INVOICES {
+        int id PK
+        string invoice_number
+        decimal total_amount
+        string status
+    }
 
-Relationships:
+    BILLS {
+        int id PK
+        string bill_number
+        decimal total_amount
+        string status
+    }
 
-```text
-contact_id → contacts.id
-sales_order_id → sales_orders.id
-purchase_order_id → purchase_orders.id
-```
+    PAYMENTS {
+        int id PK
+        string payment_number UK
+        int invoice_id FK
+        int bill_id FK
+        int contact_id FK
+        decimal amount
+        string payment_method
+        date payment_date
+    }
 
-`type`:
+    JOURNALS {
+        int id PK
+        string code UK
+        string name
+        string type
+    }
 
-```text
-CUSTOMER_INVOICE
-VENDOR_BILL
-```
+    JOURNAL_ENTRIES {
+        int id PK
+        string entry_number UK
+        int journal_id FK
+        string reference
+        date entry_date
+        string status
+    }
 
----
+    JOURNAL_ENTRY_LINES {
+        int id PK
+        int journal_entry_id FK
+        int account_id FK
+        decimal debit
+        decimal credit
+    }
 
-## 12. Invoice Items
+    ACCOUNTS {
+        int id PK
+        string account_code UK
+        string account_name
+        string type
+    }
 
-Stores individual products/services in an invoice.
+    INVOICES ||--o{ PAYMENTS : "invoice_id"
+    BILLS ||--o{ PAYMENTS : "bill_id"
 
-| Field      | Type          | Key |
-| ---------- | ------------- | --- |
-| id         | SERIAL        | PK  |
-| product_id | INT           | FK  |
-| quantity   | INT           |     |
-| unit_price | DECIMAL(12,2) |     |
-| tax        | DECIMAL(12,2) |     |
-| subtotal   | DECIMAL(12,2) |     |
-
-Relationships:
-
-```text
-invoice_id → invoices.id
-product_id → products.id
-```
-
----
-
-## 13. Payments
-
-Stores payments made or received against invoices/bills.
-
-| Field          | Type          | Key |
-| -------------- | ------------- | --- |
-| id             | SERIAL        | PK  |
-| invoice_id     | INT           | FK  |
-| amount         | DECIMAL(12,2) |     |
-| payment_method | VARCHAR(20)   |     |
-| payment_date   | DATE          |     |
-| reference      | VARCHAR(100)  |     |
-
-`invoice_id → invoices.id`
-
-Payment methods:
-
-```text
-Cash
-Bank
+    JOURNALS ||--o{ JOURNAL_ENTRIES : "journal_id"
+    JOURNAL_ENTRIES ||--|{ JOURNAL_ENTRY_LINES : "journal_entry_id"
+    ACCOUNTS ||--o{ JOURNAL_ENTRY_LINES : "account_id"
 ```
 
 ---
 
-## 14. Journal Entries
+## 5. Budgets & Analytical Management ERD
 
-Stores the accounting record of a transaction.
+Manages planned budget allocations linked to accounts and responsible users.
 
-| Field      | Type         | Key |
-| ---------- | ------------ | --- |
-| id         | SERIAL       | PK  |
-| journal_id | INT          | FK  |
-| reference  | VARCHAR(100) |     |
-| entry_date | DATE         |     |
+```mermaid
+erDiagram
+    USERS {
+        int id PK
+        string name
+        string role
+    }
 
-`journal_id → journals.id`
+    ACCOUNTS {
+        int id PK
+        string account_code UK
+        string account_name
+        string type
+    }
 
----
+    BUDGETS {
+        int id PK
+        string name
+        date start_date
+        date end_date
+        int responsible_user_id FK
+        int account_id FK
+        decimal planned_amount
+    }
 
-## 15. Journal Items
-
-Stores individual debit and credit lines.
-
-| Field            | Type          | Key |
-| ---------------- | ------------- | --- |
-| id               | SERIAL        | PK  |
-| journal_entry_id | INT           | FK  |
-| account_id       | INT           | FK  |
-| debit            | DECIMAL(12,2) |     |
-| credit           | DECIMAL(12,2) |     |
-
-Relationships:
-
-```text
-journal_entry_id → journal_entries.id
-account_id → accounts.id
+    USERS ||--o{ BUDGETS : "responsible_user_id"
+    ACCOUNTS ||--o{ BUDGETS : "account_id"
 ```
-
-**Rule:**
-
-```text
-Total Debit = Total Credit
-```
-
----
-
-## 16. Budgets
-
-Stores budget information.
-
-| Field               | Type          | Key |
-| ------------------- | ------------- | --- |
-| id                  | SERIAL        | PK  |
-| name                | VARCHAR(150)  |     |
-| start_date          | DATE          |     |
-| end_date            | DATE          |     |
-| responsible_user_id | INT           | FK  |
-| planned_amount      | DECIMAL(12,2) |     |
-
-`responsible_user_id → users.id`
-
----
-
-## 17. Main Relationships
-
-```text
-Users
-  │
-  └── Contacts
-        │
-        ├── Sales Orders
-        │      └── Sales Order Items → Products
-        │
-        ├── Purchase Orders
-        │      └── Purchase Order Items → Products
-        │
-        └── Invoices
-               └── Invoice Items → Products
-                       │
-                       └── Payments
-```
-
-Accounting:
-
-```text
-Invoices / Payments
-        ↓
-Journal Entries
-        ↓
-Journal Items
-        ↓
-Accounts
-```
-
----
-
-## 18. Important Database Rules
-
-1. Every table has a unique primary key.
-2. Foreign keys maintain relationships between related records.
-3. Required fields use `NOT NULL`.
-4. User emails must be unique.
-5. Monetary values use `DECIMAL`.
-6. An accounting entry must maintain:
-
-```text
-Total Debit = Total Credit
-```
-
-7. Passwords are stored only as hashes, never as plain text.
-8. Database credentials and secrets are stored in environment variables.
-
----
-
-> **Note for Evaluators:**
-> Tables were derived from PS entities and their relationships. Master data has separate tables, transactions use transaction + line item tables, and accounting uses a journal entry + journal line structure.
