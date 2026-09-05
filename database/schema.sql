@@ -1,0 +1,1 @@
+-- Database Schema for Urban Furniture Accounting

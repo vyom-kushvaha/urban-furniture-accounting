@@ -1,0 +1,1 @@
+-- Seed data for Urban Furniture Accounting
