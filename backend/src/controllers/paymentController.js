@@ -32,8 +32,18 @@ const registerPayment = async (req, res) => {
 
     const invoice = invoiceResult.rows[0];
     const parsedAmount = parseFloat(amount);
+    const totalAmount = parseFloat(invoice.total_amount || 0);
+    const currentPaid = parseFloat(invoice.paid_amount || 0);
+    const balanceDue = totalAmount - currentPaid;
 
-    // 3. Generate unique payment number (PAY-2026-XXXX)
+    // Overpayment Validation
+    if (parsedAmount > balanceDue + 0.01) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        success: false,
+        message: `Payment amount (₹${parsedAmount.toLocaleString('en-IN')}) cannot exceed the remaining balance due of ₹${balanceDue.toLocaleString('en-IN')}.`,
+      });
+    }
     const uniqueSerial = Date.now().toString().slice(-4) + Math.floor(10 + Math.random() * 90);
     const payment_number = `PAY-2026-${uniqueSerial}`;
 

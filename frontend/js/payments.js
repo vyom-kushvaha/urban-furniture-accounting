@@ -112,7 +112,22 @@ async function loadInvoiceDropdownOptions(token) {
             const due = i.total_amount - i.paid_amount;
             return `<option value="${i.id}">${escapeHtml(i.invoice_number)} — ${escapeHtml(i.contact_name)} (Due: ₹${due.toLocaleString('en-IN')})</option>`;
           }).join('');
+          
+          // Auto-fill amount input with remaining due of first selected invoice
+          const firstInv = pendingInvoicesCache[0];
+          const firstDue = firstInv ? (firstInv.total_amount - firstInv.paid_amount) : 0;
+          const amountInput = document.getElementById('payAmountInput');
+          if (amountInput && firstDue > 0) amountInput.value = firstDue.toFixed(2);
         }
+
+        // Add event listener to update amount input when selected invoice changes
+        invSelect.addEventListener('change', () => {
+          const selectedId = parseInt(invSelect.value);
+          const inv = pendingInvoicesCache.find(i => i.id === selectedId);
+          const due = inv ? (inv.total_amount - inv.paid_amount) : 0;
+          const amountInput = document.getElementById('payAmountInput');
+          if (amountInput && due > 0) amountInput.value = due.toFixed(2);
+        });
       }
     }
   } catch (err) {
@@ -136,6 +151,18 @@ async function handlePaymentSubmit(e, token) {
   if (!amountInput || parseFloat(amountInput.value) <= 0) {
     showUIError(alertEl, 'Valid payment amount is required');
     return;
+  }
+
+  // Frontend Overpayment Validation Check
+  const selectedInvId = parseInt(invSelect.value);
+  const targetInv = pendingInvoicesCache.find(i => i.id === selectedInvId);
+  const enteredAmount = parseFloat(amountInput.value);
+  if (targetInv) {
+    const dueAmount = targetInv.total_amount - targetInv.paid_amount;
+    if (enteredAmount > dueAmount + 0.01) {
+      showUIError(alertEl, `Payment amount (₹${enteredAmount.toLocaleString('en-IN')}) cannot exceed remaining balance due of ₹${dueAmount.toLocaleString('en-IN')}.`);
+      return;
+    }
   }
 
   const payload = {
