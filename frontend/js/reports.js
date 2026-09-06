@@ -141,3 +141,81 @@ function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+/**
+ * Export Balance Sheet Statement as PDF
+ */
+function exportBalanceSheetPDF() {
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) {
+    alert('PDF generation library is loading. Please try again in a moment.');
+    return;
+  }
+
+  const cash = document.getElementById('bsCash')?.textContent || '₹ 0.00';
+  const bank = document.getElementById('bsBank')?.textContent || '₹ 0.00';
+  const rec = document.getElementById('bsReceivables')?.textContent || '₹ 0.00';
+  const totalAssets = document.getElementById('bsTotalAssets')?.textContent || '₹ 0.00';
+
+  const payables = document.getElementById('bsPayables')?.textContent || '₹ 0.00';
+  const liabilities = document.getElementById('bsTotalLiabilities')?.textContent || '₹ 0.00';
+  const equity = document.getElementById('bsEquity')?.textContent || '₹ 0.00';
+  const totalLiabEquity = document.getElementById('bsTotalLiabilitiesEquity')?.textContent || '₹ 0.00';
+
+  const doc = new jsPDF();
+
+  // Dark Blue Header Banner (#112532)
+  doc.setFillColor(17, 37, 50);
+  doc.rect(0, 0, 210, 32, 'F');
+  doc.setTextColor(244, 176, 68); // Gold
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('URBAN FURNITURE', 14, 16);
+  doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  doc.text('ENTERPRISE LEDGER ERP • BALANCE SHEET STATEMENT', 14, 25);
+
+  doc.setTextColor(17, 37, 50);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('BALANCE SHEET STATEMENT (FY-2026)', 14, 44);
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Report Date: ${new Date().toISOString().split('T')[0]}`, 14, 52);
+
+  // Assets Table
+  doc.autoTable({
+    startY: 58,
+    head: [['1. ASSETS (CURRENT & LIQUID ASSETS)', 'AMOUNT (INR)']],
+    body: [
+      ['Cash Account (Account 1010)', cash],
+      ['HDFC Bank Account (Account 1020)', bank],
+      ['Accounts Receivable Debtors (Account 1100)', rec],
+      ['TOTAL ASSETS', totalAssets]
+    ],
+    headStyles: { fillColor: [40, 167, 69], textColor: [255, 255, 255], fontStyle: 'bold' },
+    columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 40, halign: 'right' } },
+    styles: { fontSize: 9 }
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 10;
+
+  // Liabilities & Equity Table
+  doc.autoTable({
+    startY: finalY,
+    head: [['2. LIABILITIES & EQUITY', 'AMOUNT (INR)']],
+    body: [
+      ['Accounts Payable Creditors (Account 2100)', payables],
+      ['Output GST Payable (Account 2200)', liabilities],
+      ['Retained Earnings / Equity', equity],
+      ['TOTAL LIABILITIES & EQUITY', totalLiabEquity]
+    ],
+    headStyles: { fillColor: [220, 53, 69], textColor: [255, 255, 255], fontStyle: 'bold' },
+    columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 40, halign: 'right' } },
+    styles: { fontSize: 9 }
+  });
+
+  doc.save(`Balance_Sheet_Statement_${new Date().toISOString().split('T')[0]}.pdf`);
+}
