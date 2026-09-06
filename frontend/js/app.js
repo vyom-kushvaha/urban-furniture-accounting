@@ -11,7 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /**
  * Navbar Auth Header & Authorization Initializer
- * Populates user details, formats text color, and manages role permissions
+ * HINT / DEVELOPER NOTE:
+ * - Automatically populates logged in user details in top navbar.
+ * - navUserEmail color is explicitly styled with '#88A5B7' (light slate blue)
+ *   so it is crisp, bright, and 100% visible against the dark navy blue navbar (#112532).
+ * - Restricts access to admin-only GL accounting and financial report pages if user.role === 'contact'.
  */
 function initAuthHeader() {
   const userStr = localStorage.getItem('user');

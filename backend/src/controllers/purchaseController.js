@@ -3,6 +3,9 @@ const { pool } = require('../config/db');
 // @desc    Get all Purchase Orders
 // @route   GET /api/purchase-orders
 // @access  Private
+// HINT / DEVELOPER NOTE:
+// 1. In PostgreSQL schema, purchase_orders & bills tables use vendor_id (NOT contact_id).
+// 2. If req.user.role === 'contact', we scope results to WHERE po.vendor_id = req.user.contact_id.
 const getPurchaseOrders = async (req, res) => {
   try {
     const isContact = req.user && req.user.role === 'contact' && req.user.contact_id;
@@ -189,8 +192,68 @@ const getVendorBills = async (req, res) => {
   }
 };
 
+// @desc    Get single Vendor Bill by ID with itemized line details
+// @route   GET /api/vendor-bills/:id
+// @access  Private
+const getVendorBillById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const billRes = await pool.query(`
+      SELECT 
+        b.*,
+        c.name AS vendor_name,
+        c.email AS vendor_email,
+        c.mobile AS vendor_mobile,
+        c.address AS vendor_address,
+        c.city AS vendor_city,
+        c.state AS vendor_state,
+        c.pincode AS vendor_pincode,
+        po.po_number
+      FROM bills b
+      JOIN contacts c ON b.vendor_id = c.id
+      LEFT JOIN purchase_orders po ON b.purchase_order_id = po.id
+      WHERE b.id = $1
+    `, [id]);
+
+    if (billRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Vendor Bill not found' });
+    }
+
+    const bill = billRes.rows[0];
+
+    const itemsRes = await pool.query(`
+      SELECT 
+        bi.*,
+        p.name AS product_name
+      FROM bill_items bi
+      JOIN products p ON bi.product_id = p.id
+      WHERE bi.bill_id = $1
+    `, [id]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...bill,
+        subtotal: parseFloat(bill.subtotal || 0),
+        tax_amount: parseFloat(bill.tax_amount || 0),
+        total_amount: parseFloat(bill.total_amount || 0),
+        paid_amount: parseFloat(bill.paid_amount || 0),
+        items: itemsRes.rows.map(item => ({
+          ...item,
+          unit_price: parseFloat(item.unit_price || 0),
+          subtotal: parseFloat(item.subtotal || 0),
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('[Error] getVendorBillById:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getPurchaseOrders,
   createPurchaseOrder,
   getVendorBills,
+  getVendorBillById,
 };

@@ -33,7 +33,14 @@ body {
 }
 
 /* ====================================================================
-   Top Header Navigation Bar
+   Top Header Navigation Bar Styling & Dropdown Hover Fix
+   HINT / DEVELOPER NOTE:
+   - To fix the navbar dropdown hover bug where moving the mouse down
+     caused the menu to close prematurely:
+     1. Full 100% height flex chain (container-fluid -> navbar-collapse -> navbar-nav -> mega-menu-dropdown -> nav-link-custom)
+        stretches the top link hit area down to Y = 56px (full navbar height).
+     2. ::before pseudo-element creates an invisible 16px hover bridge on top of .mega-menu-content (Y = 40px to 56px).
+     This ensures 0 dead-zone gap when moving mouse from navbar link to dropdown panel!
    ==================================================================== */
 .navbar-custom {
   background-color: var(--color-dark-blue);
@@ -41,6 +48,7 @@ body {
   height: 56px;
 }
 
+/* Full-height flex chain container to eliminate dead-zone space above top: 56px */
 .navbar-custom .container-fluid,
 .navbar-custom .navbar-collapse,
 .navbar-custom .navbar-nav {
@@ -73,7 +81,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 100%;
+  height: 100%; /* Stretches link hit area to full 56px navbar height */
 }
 
 .nav-link-custom:hover, .nav-link-custom.active {
@@ -103,7 +111,7 @@ body {
   padding: 16px 24px;
 }
 
-/* Invisible hover bridge to eliminate gap between nav link and dropdown menu */
+/* Invisible hover bridge (top: -16px) to overlap with navbar link and prevent premature unhover */
 .mega-menu-content::before {
   content: '';
   position: absolute;

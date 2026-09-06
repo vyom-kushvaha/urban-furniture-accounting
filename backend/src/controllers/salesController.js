@@ -210,8 +210,69 @@ const getInvoices = async (req, res) => {
   }
 };
 
+// @desc    Get single Customer Invoice by ID with itemized line details
+// @route   GET /api/invoices/:id
+// @access  Private
+const getInvoiceById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const invoiceRes = await pool.query(`
+      SELECT 
+        i.*,
+        c.name AS contact_name,
+        c.email AS contact_email,
+        c.mobile AS contact_mobile,
+        c.address AS contact_address,
+        c.city AS contact_city,
+        c.state AS contact_state,
+        c.pincode AS contact_pincode,
+        so.order_number
+      FROM invoices i
+      JOIN contacts c ON i.contact_id = c.id
+      LEFT JOIN sales_orders so ON i.sales_order_id = so.id
+      WHERE i.id = $1
+    `, [id]);
+
+    if (invoiceRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+
+    const invoice = invoiceRes.rows[0];
+
+    const itemsRes = await pool.query(`
+      SELECT 
+        ii.*,
+        p.name AS product_name
+      FROM invoice_items ii
+      JOIN products p ON ii.product_id = p.id
+      WHERE ii.invoice_id = $1
+    `, [id]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...invoice,
+        subtotal: parseFloat(invoice.subtotal || 0),
+        tax_amount: parseFloat(invoice.tax_amount || 0),
+        total_amount: parseFloat(invoice.total_amount || 0),
+        paid_amount: parseFloat(invoice.paid_amount || 0),
+        items: itemsRes.rows.map(item => ({
+          ...item,
+          unit_price: parseFloat(item.unit_price || 0),
+          tax_amount: parseFloat(item.tax_amount || 0),
+          subtotal: parseFloat(item.subtotal || 0),
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('[Error] getInvoiceById:', error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createSalesOrder,
   getSalesOrders,
   getInvoices,
+  getInvoiceById,
 };

@@ -298,9 +298,172 @@ function renderVendorBillsTable(bills) {
         <td class="text-end fw-bold">₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
         <td class="text-end text-success fw-bold">₹${paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
         <td class="text-end ${balance > 0 ? 'text-danger fw-bold' : 'text-muted'}">₹${balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-gold d-inline-flex align-items-center gap-1 py-1 px-2" onclick="downloadVendorBillPDF(${b.id})">
+            <span class="material-symbols-outlined fs-6">picture_as_pdf</span>
+            <span>Export PDF</span>
+          </button>
+        </td>
       </tr>
     `;
   }).join('');
+}
+
+/**
+ * Fetch selected vendor bill details and trigger PDF download
+ * @param {number} billId 
+ */
+async function downloadVendorBillPDF(billId) {
+  const token = localStorage.getItem('token');
+  if (!token) return handleAuthFailure();
+
+  try {
+    const res = await fetch(`/api/vendor-bills/${billId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const result = await res.json();
+
+    if (!res.ok || !result.success || !result.data) {
+      alert(result.message || 'Failed to retrieve vendor bill details for PDF export.');
+      return;
+    }
+
+    generateVendorBillPDF(result.data);
+  } catch (err) {
+    console.error('Error exporting Vendor Bill PDF:', err);
+    alert('Unable to generate PDF vendor bill. Please verify server connection and try again.');
+  }
+}
+
+/**
+ * Generate formatted Vendor Bill PDF and initiate browser download
+ * @param {Object} bill 
+ */
+function generateVendorBillPDF(bill) {
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) {
+    alert('PDF generation library is loading. Please try again in a moment.');
+    return;
+  }
+
+  const doc = new jsPDF();
+
+  // Header Dark Blue Banner
+  doc.setFillColor(17, 37, 50); // #112532
+  doc.rect(0, 0, 210, 32, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('URBAN FURNITURE', 14, 18);
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(136, 165, 183); // Slate Blue
+  doc.text('ENTERPRISE LEDGER ERP • VENDOR PAYABLE BILL', 14, 25);
+
+  // Document Title & Number
+  doc.setTextColor(0, 30, 44);
+  doc.setFontSize(15);
+  doc.setFont('helvetica', 'bold');
+  doc.text('VENDOR BILL VOUCHER', 14, 44);
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(67, 71, 75);
+  doc.text(`Bill No: ${bill.bill_number || 'N/A'}`, 14, 52);
+  doc.text(`Purchase Order Ref: ${bill.po_number || 'N/A'}`, 14, 58);
+  doc.text(`Bill Date: ${bill.bill_date ? new Date(bill.bill_date).toISOString().split('T')[0] : '--'}`, 14, 64);
+  doc.text(`Due Date: ${bill.due_date ? new Date(bill.due_date).toISOString().split('T')[0] : '--'}`, 14, 70);
+
+  // Status Badge
+  const statusStr = (bill.status || 'UNPAID').toUpperCase();
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Status: ${statusStr}`, 140, 52);
+
+  // Vendor Info Box
+  doc.setFillColor(245, 250, 255);
+  doc.roundedRect(135, 56, 61, 26, 2, 2, 'F');
+  doc.setFontSize(8.5);
+  doc.setTextColor(17, 37, 50);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Vendor Supplier:', 139, 62);
+  doc.setFont('helvetica', 'normal');
+  doc.text(bill.vendor_name || 'Vendor', 139, 68);
+  if (bill.vendor_mobile) doc.text(`Ph: ${bill.vendor_mobile}`, 139, 73);
+  if (bill.vendor_email) doc.text(bill.vendor_email, 139, 78);
+
+  // Table Items
+  const tableData = (bill.items || []).map((item, idx) => [
+    idx + 1,
+    item.product_name || 'Procured Furniture Item',
+    item.quantity || 1,
+    'Rs. ' + (item.unit_price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+    'Rs. ' + (item.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+  ]);
+
+  if (tableData.length === 0) {
+    const sub = parseFloat(bill.subtotal || 0);
+    tableData.push([1, 'Procured Raw Material / Goods', 1, 'Rs. ' + sub.toLocaleString('en-IN', { minimumFractionDigits: 2 }), 'Rs. ' + sub.toLocaleString('en-IN', { minimumFractionDigits: 2 })]);
+  }
+
+  doc.autoTable({
+    startY: 88,
+    head: [['#', 'Item Description', 'Qty', 'Unit Price', 'Subtotal']],
+    body: tableData,
+    headStyles: { fillStyle: 'F', fillColor: [17, 37, 50], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5 },
+    columnStyles: {
+      0: { cellWidth: 10 },
+      1: { cellWidth: 90 },
+      2: { cellWidth: 20, halign: 'center' },
+      3: { cellWidth: 35, halign: 'right' },
+      4: { cellWidth: 35, halign: 'right' },
+    },
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 10;
+
+  // Financial Summary
+  const subtotal = parseFloat(bill.subtotal || 0);
+  const tax = parseFloat(bill.tax_amount || 0);
+  const total = parseFloat(bill.total_amount || 0);
+  const paid = parseFloat(bill.paid_amount || 0);
+  const balance = total - paid;
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(67, 71, 75);
+  doc.text(`Subtotal:`, 130, finalY);
+  doc.text(`Rs. ${subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY, { align: 'right' });
+
+  doc.text(`GST Tax (18%):`, 130, finalY + 6);
+  doc.text(`Rs. ${tax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 6, { align: 'right' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(17, 37, 50);
+  doc.text(`Total Amount:`, 130, finalY + 13);
+  doc.text(`Rs. ${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 13, { align: 'right' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(40, 167, 69);
+  doc.text(`Amount Paid:`, 130, finalY + 19);
+  doc.text(`Rs. ${paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 19, { align: 'right' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(balance > 0 ? 224 : 40, balance > 0 ? 104 : 167, balance > 0 ? 14 : 69);
+  doc.text(`Balance Due:`, 130, finalY + 25);
+  doc.text(`Rs. ${balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 25, { align: 'right' });
+
+  // Footer Note
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(136, 165, 183);
+  doc.text('Official Vendor Voucher — Urban Furniture Accounting System.', 105, 285, { align: 'center' });
+
+  // Direct Download
+  const filename = `Bill_${bill.bill_number || 'BILL'}.pdf`;
+  doc.save(filename);
 }
 
 function showUIError(alertEl, message) {

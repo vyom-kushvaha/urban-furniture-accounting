@@ -76,6 +76,8 @@ AI_RULES.md
 # Scratch & test scripts
 scratch/
 ROADMAP*.md
+*.zip
+stitch_export/
 
 
 

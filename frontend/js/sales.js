@@ -385,9 +385,175 @@ function renderInvoicesTable(invoices) {
         <td class="text-end fw-bold">${formatINR(totalAmount)}</td>
         <td class="text-end text-success fw-bold">${formatINR(paidAmount)}</td>
         <td class="text-end ${balanceDue > 0 ? 'text-danger fw-bold' : 'text-muted'}">${formatINR(balanceDue)}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-gold d-inline-flex align-items-center gap-1 py-1 px-2" onclick="downloadInvoicePDF(${inv.id})">
+            <span class="material-symbols-outlined fs-6">picture_as_pdf</span>
+            <span>Export PDF</span>
+          </button>
+        </td>
       </tr>
     `;
   }).join('');
+}
+
+/**
+ * Fetch selected invoice details and trigger PDF download
+ * @param {number} invoiceId 
+ */
+async function downloadInvoicePDF(invoiceId) {
+  const token = localStorage.getItem('token');
+  if (!token) return handleAuthFailure();
+
+  try {
+    const res = await fetch(`/api/invoices/${invoiceId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const result = await res.json();
+
+    if (!res.ok || !result.success || !result.data) {
+      alert(result.message || 'Failed to retrieve invoice details for PDF export.');
+      return;
+    }
+
+    generateInvoicePDF(result.data);
+  } catch (err) {
+    console.error('Error exporting Invoice PDF:', err);
+    alert('Unable to generate PDF invoice. Please verify server connection and try again.');
+  }
+}
+
+/**
+ * Generate formatted Customer Invoice PDF and initiate browser download
+ * @param {Object} inv 
+ */
+function generateInvoicePDF(inv) {
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) {
+    alert('PDF generation library is loading. Please try again in a moment.');
+    return;
+  }
+
+  const doc = new jsPDF();
+
+  // Header Dark Blue Banner
+  doc.setFillColor(17, 37, 50); // #112532
+  doc.rect(0, 0, 210, 32, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('URBAN FURNITURE', 14, 18);
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(136, 165, 183); // #88A5B7 Slate Blue
+  doc.text('ENTERPRISE LEDGER ERP • CUSTOMER INVOICE', 14, 25);
+
+  // Document Title & Number
+  doc.setTextColor(0, 30, 44);
+  doc.setFontSize(15);
+  doc.setFont('helvetica', 'bold');
+  doc.text('TAX INVOICE', 14, 44);
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(67, 71, 75);
+  doc.text(`Invoice No: ${inv.invoice_number || 'N/A'}`, 14, 52);
+  doc.text(`Sales Order Ref: ${inv.order_number || 'N/A'}`, 14, 58);
+  doc.text(`Invoice Date: ${inv.invoice_date ? new Date(inv.invoice_date).toISOString().split('T')[0] : '--'}`, 14, 64);
+  doc.text(`Due Date: ${inv.due_date ? new Date(inv.due_date).toISOString().split('T')[0] : '--'}`, 14, 70);
+
+  // Status Badge
+  const statusStr = (inv.status || 'UNPAID').toUpperCase();
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Status: ${statusStr}`, 140, 52);
+
+  // Customer Info Box
+  doc.setFillColor(245, 250, 255);
+  doc.roundedRect(135, 56, 61, 26, 2, 2, 'F');
+  doc.setFontSize(8.5);
+  doc.setTextColor(17, 37, 50);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Billed To Customer:', 139, 62);
+  doc.setFont('helvetica', 'normal');
+  doc.text(inv.contact_name || 'Customer', 139, 68);
+  if (inv.contact_mobile) doc.text(`Ph: ${inv.contact_mobile}`, 139, 73);
+  if (inv.contact_email) doc.text(inv.contact_email, 139, 78);
+
+  // Table Items
+  const tableData = (inv.items || []).map((item, idx) => [
+    idx + 1,
+    item.product_name || 'Furniture Item',
+    item.quantity || 1,
+    'Rs. ' + (item.unit_price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+    'Rs. ' + (item.tax_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+    'Rs. ' + (item.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+  ]);
+
+  if (tableData.length === 0) {
+    const sub = parseFloat(inv.subtotal || 0);
+    const tax = parseFloat(inv.tax_amount || 0);
+    tableData.push([1, 'Custom Furniture Order Item', 1, 'Rs. ' + sub.toLocaleString('en-IN', { minimumFractionDigits: 2 }), 'Rs. ' + tax.toLocaleString('en-IN', { minimumFractionDigits: 2 }), 'Rs. ' + sub.toLocaleString('en-IN', { minimumFractionDigits: 2 })]);
+  }
+
+  doc.autoTable({
+    startY: 88,
+    head: [['#', 'Item Description', 'Qty', 'Unit Price', 'GST (18%)', 'Subtotal']],
+    body: tableData,
+    headStyles: { fillStyle: 'F', fillColor: [17, 37, 50], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5 },
+    columnStyles: {
+      0: { cellWidth: 10 },
+      1: { cellWidth: 70 },
+      2: { cellWidth: 18, halign: 'center' },
+      3: { cellWidth: 30, halign: 'right' },
+      4: { cellWidth: 30, halign: 'right' },
+      5: { cellWidth: 30, halign: 'right' },
+    },
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 10;
+
+  // Financial Summary
+  const subtotal = parseFloat(inv.subtotal || 0);
+  const tax = parseFloat(inv.tax_amount || 0);
+  const total = parseFloat(inv.total_amount || 0);
+  const paid = parseFloat(inv.paid_amount || 0);
+  const balance = total - paid;
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(67, 71, 75);
+  doc.text(`Subtotal:`, 130, finalY);
+  doc.text(`Rs. ${subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY, { align: 'right' });
+
+  doc.text(`GST Tax (18%):`, 130, finalY + 6);
+  doc.text(`Rs. ${tax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 6, { align: 'right' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(17, 37, 50);
+  doc.text(`Total Amount:`, 130, finalY + 13);
+  doc.text(`Rs. ${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 13, { align: 'right' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(40, 167, 69);
+  doc.text(`Amount Paid:`, 130, finalY + 19);
+  doc.text(`Rs. ${paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 19, { align: 'right' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(balance > 0 ? 224 : 40, balance > 0 ? 104 : 167, balance > 0 ? 14 : 69);
+  doc.text(`Balance Due:`, 130, finalY + 25);
+  doc.text(`Rs. ${balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 195, finalY + 25, { align: 'right' });
+
+  // Footer Note
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(136, 165, 183);
+  doc.text('Thank you for doing business with Urban Furniture Accounting System.', 105, 285, { align: 'center' });
+
+  // Direct Download
+  const filename = `Invoice_${inv.invoice_number || 'INV'}.pdf`;
+  doc.save(filename);
 }
 
 function showUIError(alertEl, message) {

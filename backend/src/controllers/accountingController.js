@@ -123,6 +123,10 @@ const getJournalEntries = async (req, res) => {
 
 // @desc    Create Manual Journal Entry with Double-Entry Balance Check
 // @route   POST /api/journal-entries
+// HINT / DEVELOPER NOTE:
+// Double-Entry Accounting Enforcement:
+// Every journal entry MUST balance mathematically (Sum(Debit) == Sum(Credit)).
+// If totalDebit != totalCredit, the API rejects the request with HTTP 400.
 const createJournalEntry = async (req, res) => {
   const { journal_id, reference, lines } = req.body;
 

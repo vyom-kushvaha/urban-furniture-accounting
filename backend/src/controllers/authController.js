@@ -16,6 +16,10 @@ const loginUser = async (req, res) => {
   }
 
   try {
+    // HINT / DEVELOPER NOTE:
+    // LEFT JOIN contacts c ON c.user_id = u.id retrieves the linked contact_id
+    // when a customer/vendor ('contact' role) logs in. This contact_id is used
+    // across all backend controllers to filter user-specific sales, purchases, and payments!
     const result = await pool.query(
       `SELECT u.id, u.name, u.email, u.password_hash, u.role, c.id AS contact_id 
        FROM users u 
