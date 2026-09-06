@@ -37,8 +37,7 @@ app.get('/api/health', async (req, res) => {
 // API Routes
 app.use('/api/contacts', contactRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/sales-orders', salesRoutes);
-app.use('/api/invoices', salesRoutes);
+app.use('/api', salesRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/products', productRoutes);
