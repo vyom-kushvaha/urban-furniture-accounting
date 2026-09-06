@@ -55,9 +55,11 @@ function initAuthHeader() {
       });
     }
 
-    // Role-based UI Authorization: Handle contact role limitations gracefully
+    // Strict Role-Based Authorization: Completely HIDE restricted menus & redirect customer away from admin pages
     if (user.role === 'contact') {
-      const restrictedHrefs = [
+      const restrictedPages = [
+        'vendor-bills.html',
+        'purchase-orders.html',
         'chart-of-accounts.html',
         'journals.html',
         'journal-entries.html',
@@ -65,19 +67,42 @@ function initAuthHeader() {
         'reports-balance-sheet.html',
         'reports-profit-loss.html',
         'reports-budget.html',
+        'analytic-accounts.html',
         'create-user.html'
       ];
 
+      // 1. Page URL Redirect Guard: Redirect customer if visiting restricted page
+      const currentPath = window.location.pathname.split('/').pop();
+      if (restrictedPages.includes(currentPath)) {
+        window.location.href = 'customer-invoices.html';
+        return;
+      }
+
+      // 2. Hide Navbar Dropdowns (Purchase & Report)
+      document.querySelectorAll('.mega-menu-dropdown').forEach(dropdown => {
+        const text = dropdown.textContent || '';
+        if (text.includes('Purchase') || text.includes('Report')) {
+          dropdown.style.display = 'none';
+        }
+      });
+
+      // 3. Hide Restricted Cards under remaining menus
       document.querySelectorAll('.mega-item-card').forEach(card => {
         const href = card.getAttribute('href');
-        if (restrictedHrefs.includes(href)) {
-          card.style.opacity = '0.4';
-          card.title = 'Authorized for Admin & Accountant roles only';
-          card.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Access Restricted: This accounting / report module is reserved for Admin & Accountant roles.');
-          });
+        if (restrictedPages.includes(href)) {
+          const parentCol = card.closest('.col-4, .col-md-4, col-6');
+          if (parentCol) {
+            parentCol.style.display = 'none';
+          } else {
+            card.style.display = 'none';
+          }
         }
+      });
+
+      // 4. Hide Master Creation Action Buttons for Customer Role
+      const hideSelector = 'a[href="sales-orders.html"], button[data-bs-target="#createSOModal"], button[data-bs-target="#addContactModal"], button[data-bs-target="#addProductModal"], a[href="contact-form.html"], a[href="product-form.html"]';
+      document.querySelectorAll(hideSelector).forEach(btn => {
+        btn.style.display = 'none';
       });
     }
   } catch (e) {
